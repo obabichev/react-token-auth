@@ -4,7 +4,11 @@
     "module": "commonjs",
     "declaration": true,
     "outDir": "./lib",
-    "strict": true
+    "strict": true,
+    "lib": [
+      "dom",
+      "es6"
+    ]
   },
   "include": [
     "src"
