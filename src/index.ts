@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 
 export interface IAuthProviderConfig<T> {
     accessTokenExpireKey?: string;
@@ -8,11 +8,11 @@ export interface IAuthProviderConfig<T> {
 }
 
 export const createAuthProvider = <T>({
-                                          accessTokenExpireKey,
-                                          accessTokenKey,
-                                          localStorageKey = 'REACT_TOKEN_AUTH_KEY',
-                                          onUpdateToken,
-                                      }: IAuthProviderConfig<T>) => {
+    accessTokenExpireKey,
+    accessTokenKey,
+    localStorageKey = 'REACT_TOKEN_AUTH_KEY',
+    onUpdateToken,
+}: IAuthProviderConfig<T>) => {
     const localStorageData = localStorage.getItem(localStorageKey);
 
     const tp = createTokenProvider({
@@ -23,37 +23,16 @@ export const createAuthProvider = <T>({
         onUpdateToken,
     });
 
-    let listeners: Array<(newLogged: boolean) => void> = [];
-
-    const notify = () => {
-        const isLogged = tp.isLoggedIn();
-        listeners.forEach(l => l(isLogged));
-    };
-
-    const subscribe = (listener: (logged: boolean) => void) => {
-        listeners.push(listener);
-    };
-
-    const unsubscribe = (listener: (logged: boolean) => void) => {
-        listeners = listeners.filter(l => l !== listener);
-    };
-
     const login = (newTokens: T) => {
         tp.setToken(newTokens);
-        notify();
     };
 
     const logout = () => {
         tp.setToken(null);
-        notify();
     };
 
     const authFetch = async (input: RequestInfo, init?: RequestInit): Promise<Response> => {
         const token = await tp.getToken();
-
-        if (!token) {
-            notify();
-        }
 
         init = init || {};
 
@@ -73,21 +52,16 @@ export const createAuthProvider = <T>({
         };
 
         useEffect(() => {
-            subscribe(listener);
+            tp.subscribe(listener);
             return () => {
-                unsubscribe(listener);
+                tp.unsubscribe(listener);
             };
         }, [listener]);
 
         return [isLogged] as [typeof isLogged];
     };
 
-    return [useAuth, authFetch, login, logout] as [
-        typeof useAuth,
-        typeof authFetch,
-        typeof login,
-        typeof logout
-        ];
+    return [useAuth, authFetch, login, logout] as [typeof useAuth, typeof authFetch, typeof login, typeof logout];
 };
 
 interface ITokenProviderConfig<T> {
@@ -99,13 +73,23 @@ interface ITokenProviderConfig<T> {
 }
 
 const createTokenProvider = <T>({
-                                    initToken,
-                                    localStorageKey,
-                                    accessTokenKey,
-                                    accessTokenExpireKey,
-                                    onUpdateToken,
-                                }: ITokenProviderConfig<T>) => {
+    initToken,
+    localStorageKey,
+    accessTokenKey,
+    accessTokenExpireKey,
+    onUpdateToken,
+}: ITokenProviderConfig<T>) => {
     let privateToken = initToken;
+
+    let listeners: Array<(newLogged: boolean) => void> = [];
+
+    const subscribe = (listener: (logged: boolean) => void) => {
+        listeners.push(listener);
+    };
+
+    const unsubscribe = (listener: (logged: boolean) => void) => {
+        listeners = listeners.filter(l => l !== listener);
+    };
 
     const jwtExp = (token?: any): number | null => {
         if (!(typeof token === 'string')) {
@@ -156,7 +140,7 @@ const createTokenProvider = <T>({
             return false;
         }
 
-        return Date.now() > exp - 10000;
+        return Date.now() > exp;
     };
 
     const checkExpiry = async () => {
@@ -194,11 +178,19 @@ const createTokenProvider = <T>({
             localStorage.removeItem(localStorageKey);
         }
         privateToken = token;
+        notify();
+    };
+
+    const notify = () => {
+        const isLogged = isLoggedIn();
+        listeners.forEach(l => l(isLogged));
     };
 
     return {
         getToken,
         isLoggedIn,
         setToken,
+        subscribe,
+        unsubscribe,
     };
 };
