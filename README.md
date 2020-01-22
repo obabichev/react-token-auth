@@ -41,7 +41,11 @@ import {createAuthProvider} from 'react-token-auth';
 export const [useAuth, authFetch, login, logout] =
     createAuthProvider<{ accessToken: string, refreshToken: string }>({
         accessTokenKey: 'accessToken',
-        onUpdateToken: (token) => fetch('/update-token', {/*...*/})
+        onUpdateToken: (token) => fetch('/update-token', {
+            method: 'POST',
+            body: token.refreshToken
+        })
+        .then(r => r.json())
     });
 ```
 
@@ -113,7 +117,7 @@ from `thunk`:
 ```typescript
 export const getUser = (userId: string) => (dispatch: Dispatch) => {
     authFetch(`/user/${userId}`)
-        .then(r => r.json)
+        .then(r => r.json())
         .then(user => {
             dispatch(getUserAction(user);
         })
