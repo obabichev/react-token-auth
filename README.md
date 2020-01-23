@@ -131,3 +131,21 @@ That's it. The library has a minimal and straightforward API.
 If it doesn't match your specific requirements be free to write an 
 issue, make a pull request, make fork or use the source code as an 
 example or base for your solution.
+
+## API
+
+### `createAuthProvider(config)` -> `AuthProvider`
+
+#### `config: IAuthProviderConfig<T>`
+
+- `accessTokenExpireKey?: string` - key of the field with expiration date inside token
+- `accessTokenKey?: string` - key of the field with access token (if not presented the whole token will be recognized as access token)
+- `localStorageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
+- `onUpdateToken?: (token: T) => Promise<T | null>` - function to update access token when it is expired
+
+#### `AuthProvider: [useAuth, authFetch, login, logout]`
+
+- `useAuth: () => [boolean]` - hook to get information is the user logged in or not
+- `authFetch: typeof fetch` - wrapper around fetch to pass access tokens in the network requests
+- `login: token => void` - function to save token (for example, after login or register)
+- `logout: () => void` - function to remove token from auth provider (and from local storage) 
