@@ -105,7 +105,7 @@ const createTokenProvider = <T>({
         try {
             const jwt = JSON.parse(atob(token.split('.')[1]));
             if (jwt && jwt.exp && Number.isFinite(jwt.exp)) {
-                return jwt.exp * 10000;
+                return jwt.exp * 1000;
             } else {
                 return null;
             }
