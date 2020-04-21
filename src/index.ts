@@ -149,6 +149,7 @@ const createTokenProvider = <T>({
 
             if (newToken) {
                 privateToken = newToken;
+                setToken(newToken);
             } else {
                 localStorage.removeItem(localStorageKey);
                 privateToken = null;
