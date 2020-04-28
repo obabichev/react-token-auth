@@ -121,7 +121,7 @@ const createTokenProvider = <T>({
 
         if (accessTokenExpireKey) {
             // @ts-ignore
-            return token[accessTokenExpireField];
+            return token[accessTokenExpireKey];
         }
 
         if (accessTokenKey) {
