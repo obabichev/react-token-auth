@@ -96,7 +96,7 @@ const createTokenProvider = <T>({
                                 }: ITokenProviderConfig<T>) => {
     let listeners: Array<(newLogged: boolean) => void> = [];
 
-    const _getToken = (): T | null => {
+    const getTokenInternal = (): T | null => {
         const data = storage.getItem(localStorageKey);
 
         const token = (data && JSON.parse(data)) || null;
@@ -165,7 +165,7 @@ const createTokenProvider = <T>({
     };
 
     const checkExpiry = async () => {
-        const token = _getToken();
+        const token = getTokenInternal();
         if (token && isExpired(getExpire(token))) {
             const newToken = onUpdateToken ? await onUpdateToken(token) : null;
 
@@ -181,16 +181,16 @@ const createTokenProvider = <T>({
         await checkExpiry();
 
         if (accessTokenKey) {
-            const token = _getToken();
+            const token = getTokenInternal();
             // @ts-ignore
             return token && token[accessTokenKey];
         }
 
-        return _getToken();
+        return getTokenInternal();
     };
 
     const isLoggedIn = () => {
-        return !!_getToken();
+        return !!getTokenInternal();
     };
 
     const setToken = (token: T | null) => {
