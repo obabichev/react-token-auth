@@ -81,6 +81,12 @@ const createTokenProvider = <T>({
 }: ITokenProviderConfig<T>) => {
     let privateToken = initToken;
 
+    const getDataTokenFromLocalStore = () => {
+        const localStorageData = localStorage.getItem(localStorageKey);
+        return (localStorageData && JSON.parse(localStorageData))
+            || null
+    }
+
     let listeners: Array<(newLogged: boolean) => void> = [];
 
     const subscribe = (listener: (logged: boolean) => void) => {
@@ -144,6 +150,7 @@ const createTokenProvider = <T>({
     };
 
     const checkExpiry = async () => {
+        privateToken = getDataTokenFromLocalStore();
         if (privateToken && isExpired(getExpire(privateToken))) {
             const newToken = onUpdateToken ? await onUpdateToken(privateToken) : null;
 
@@ -169,6 +176,7 @@ const createTokenProvider = <T>({
     };
 
     const isLoggedIn = () => {
+        privateToken = getDataTokenFromLocalStore();
         return !!privateToken;
     };
 
