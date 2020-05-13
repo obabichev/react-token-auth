@@ -142,6 +142,8 @@ example or base for your solution.
 - `accessTokenKey?: string` - key of the field with access token (if not presented the whole token will be recognized as access token)
 - `localStorageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 - `onUpdateToken?: (token: T) => Promise<T | null>` - function to update access token when it is expired
+- `storage` - object that provides the api of the `localStorage` (`getItem`, `setItem`, `removeItem`) to store the data. By default the wrapper over `localStorage` is used.
+- `customFetch` - you can provide you own `fetch` function. Added to be able to pass wrappers over standard fetch.
 
 #### `AuthProvider: [useAuth, authFetch, login, logout]`
 

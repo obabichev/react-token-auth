@@ -1,26 +1,33 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
+import {createDefaultStore} from './utils/defaultStore';
 
 export interface IAuthProviderConfig<T> {
     accessTokenExpireKey?: string;
     accessTokenKey?: string;
     localStorageKey?: string;
     onUpdateToken?: (token: T) => Promise<T | null>;
+    storage?: {
+        getItem: (key: string) => any,
+        setItem: (key: string, value: any) => void,
+        removeItem: (key: string) => void
+    },
+    customFetch?: typeof fetch
 }
 
 export const createAuthProvider = <T>({
-    accessTokenExpireKey,
-    accessTokenKey,
-    localStorageKey = 'REACT_TOKEN_AUTH_KEY',
-    onUpdateToken,
-}: IAuthProviderConfig<T>) => {
-    const localStorageData = localStorage.getItem(localStorageKey);
-
+                                          accessTokenExpireKey,
+                                          accessTokenKey,
+                                          localStorageKey = 'REACT_TOKEN_AUTH_KEY',
+                                          onUpdateToken,
+                                          storage = createDefaultStore({[localStorageKey]: localStorage.getItem(localStorageKey)}),
+                                          customFetch
+                                      }: IAuthProviderConfig<T>) => {
     const tp = createTokenProvider({
         accessTokenExpireKey,
         accessTokenKey,
-        initToken: (localStorageData && JSON.parse(localStorageData)) || null,
         localStorageKey,
         onUpdateToken,
+        storage
     });
 
     const login = (newTokens: T) => {
@@ -40,6 +47,10 @@ export const createAuthProvider = <T>({
             ...init.headers,
             Authorization: `Bearer ${token}`,
         };
+
+        if (customFetch) {
+            return customFetch(input, init);
+        }
 
         return fetch(input, init);
     };
@@ -67,21 +78,31 @@ export const createAuthProvider = <T>({
 interface ITokenProviderConfig<T> {
     accessTokenExpireKey?: string;
     accessTokenKey?: string;
-    initToken: T | null;
     localStorageKey: string;
     onUpdateToken?: (token: T) => Promise<T | null>;
+    storage: {
+        getItem: (key: string) => any,
+        setItem: (key: string, value: any) => void,
+        removeItem: (key: string) => void
+    }
 }
 
 const createTokenProvider = <T>({
-    initToken,
-    localStorageKey,
-    accessTokenKey,
-    accessTokenExpireKey,
-    onUpdateToken,
-}: ITokenProviderConfig<T>) => {
-    let privateToken = initToken;
-
+                                    localStorageKey,
+                                    accessTokenKey,
+                                    accessTokenExpireKey,
+                                    onUpdateToken,
+                                    storage
+                                }: ITokenProviderConfig<T>) => {
     let listeners: Array<(newLogged: boolean) => void> = [];
+
+    const _getToken = (): T | null => {
+        const data = storage.getItem(localStorageKey);
+
+        const token = (data && JSON.parse(data)) || null;
+
+        return token as T;
+    };
 
     const subscribe = (listener: (logged: boolean) => void) => {
         listeners.push(listener);
@@ -144,15 +165,14 @@ const createTokenProvider = <T>({
     };
 
     const checkExpiry = async () => {
-        if (privateToken && isExpired(getExpire(privateToken))) {
-            const newToken = onUpdateToken ? await onUpdateToken(privateToken) : null;
+        const token = _getToken();
+        if (token && isExpired(getExpire(token))) {
+            const newToken = onUpdateToken ? await onUpdateToken(token) : null;
 
             if (newToken) {
-                privateToken = newToken;
                 setToken(newToken);
             } else {
-                localStorage.removeItem(localStorageKey);
-                privateToken = null;
+                storage.removeItem(localStorageKey);
             }
         }
     };
@@ -161,24 +181,24 @@ const createTokenProvider = <T>({
         await checkExpiry();
 
         if (accessTokenKey) {
+            const token = _getToken();
             // @ts-ignore
-            return privateToken[accessTokenKey];
+            return token && token[accessTokenKey];
         }
 
-        return privateToken;
+        return _getToken();
     };
 
     const isLoggedIn = () => {
-        return !!privateToken;
+        return !!_getToken();
     };
 
     const setToken = (token: T | null) => {
         if (token) {
-            localStorage.setItem(localStorageKey, JSON.stringify(token));
+            storage.setItem(localStorageKey, JSON.stringify(token));
         } else {
-            localStorage.removeItem(localStorageKey);
+            storage.removeItem(localStorageKey);
         }
-        privateToken = token;
         notify();
     };
 
