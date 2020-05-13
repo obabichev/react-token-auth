@@ -47,7 +47,7 @@ export const createAuthProvider = <T>({
     const useAuth = () => {
         const [isLogged, setIsLogged] = useState(tp.isLoggedIn());
 
-        const listener = (newIsLogged: boolean) => {
+        function listener(newIsLogged: boolean) {
             setIsLogged(newIsLogged);
         };
 
@@ -56,7 +56,7 @@ export const createAuthProvider = <T>({
             return () => {
                 tp.unsubscribe(listener);
             };
-        }, [listener]);
+        });
 
         return [isLogged] as [typeof isLogged];
     };
