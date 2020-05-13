@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {createDefaultStore} from './utils/defaultStore';
 
 export interface IAuthProviderConfig<T> {
@@ -58,9 +58,9 @@ export const createAuthProvider = <T>({
     const useAuth = () => {
         const [isLogged, setIsLogged] = useState(tp.isLoggedIn());
 
-        const listener = (newIsLogged: boolean) => {
+        const listener = useCallback((newIsLogged: boolean) => {
             setIsLogged(newIsLogged);
-        };
+        }, [setIsLogged]);
 
         useEffect(() => {
             tp.subscribe(listener);
