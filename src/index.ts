@@ -37,6 +37,10 @@ export const createAuthProvider = <T>({
     const logout = () => {
         tp.setToken(null);
     };
+                                          
+    const getToken = async () => {
+        return await tp.getToken();
+    };
 
     const authFetch = async (input: RequestInfo, init?: RequestInit): Promise<Response> => {
         const token = await tp.getToken();
@@ -72,7 +76,7 @@ export const createAuthProvider = <T>({
         return [isLogged] as [typeof isLogged];
     };
 
-    return [useAuth, authFetch, login, logout] as [typeof useAuth, typeof authFetch, typeof login, typeof logout];
+    return [useAuth, authFetch, login, logout, getToken] as [typeof useAuth, typeof authFetch, typeof login, typeof logout, typeof getToken];
 };
 
 interface ITokenProviderConfig<T> {
