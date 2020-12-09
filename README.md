@@ -1,6 +1,6 @@
 # Disclaimer
 
-I made this small library on the my way of understanding authorization. I DON'T RECOMMENT TO USE THIS LIBRARY, because it may cause security issues. Storing auth tokens in the local storage is not safe, because any JavaScript code on the page hase access to the local storage what makes your app vulnerable to different vectors of attacks (especially XSS).
+I made this small library on my way of understanding authorization. I DON'T RECOMMEND TO USE THIS LIBRARY, because it may cause security issues. Storing auth tokens in the local storage is not safe, because any JavaScript code on the page has access to the local storage what makes your app vulnerable to different vectors of attacks (especially XSS).
 
 # React Token Auth
 
