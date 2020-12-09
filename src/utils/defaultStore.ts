@@ -15,5 +15,5 @@ export const createDefaultStore = (initData = {}) => {
         localStorage.removeItem(key);
     };
 
-    return {getItem, setItem, removeItem}
+    return { getItem, setItem, removeItem };
 };
