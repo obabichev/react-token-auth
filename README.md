@@ -109,6 +109,8 @@ const Router = () => {
 };
 ```
 
+`onHydratation`, when provided, receives the token when `useAuth` is called, inside `onHydratation` you can extract any information you need from it.
+
 And the function `authFetch()` is the wrapper for function `fetch()`. 
 `authFetch()` and fetch have the same API, but `authFetch` automatically 
 passes the token from token provider to the network requests. For example 
@@ -142,6 +144,7 @@ example or base for your solution.
 - `accessTokenKey?: string` - key of the field with access token (if not presented the whole token will be recognized as access token)
 - `localStorageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 - `onUpdateToken?: (token: T) => Promise<T | null>` - function to update access token when it is expired
+- `onHydratation?: (token: T | null) => void` - function to process your tokens when `useAuth` is called.
 - `storage` - object that provides the api of the `localStorage` (`getItem`, `setItem`, `removeItem`) to store the data. By default the wrapper over `localStorage` is used.
 - `customFetch` - you can provide you own `fetch` function. Added to be able to pass wrappers over standard fetch.
 
