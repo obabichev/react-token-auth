@@ -1,33 +1,36 @@
-import {useCallback, useEffect, useState} from 'react';
-import {createDefaultStore} from './utils/defaultStore';
+import { useCallback, useEffect, useState } from 'react';
+import { createDefaultStore } from './utils/defaultStore';
 
 export interface IAuthProviderConfig<T> {
     accessTokenExpireKey?: string;
     accessTokenKey?: string;
     localStorageKey?: string;
     onUpdateToken?: (token: T) => Promise<T | null>;
+    onHydratation?: (token: T | null) => void;
     storage?: {
-        getItem: (key: string) => any,
-        setItem: (key: string, value: any) => void,
-        removeItem: (key: string) => void
-    },
-    customFetch?: typeof fetch
+        getItem: (key: string) => any;
+        setItem: (key: string, value: any) => void;
+        removeItem: (key: string) => void;
+    };
+    customFetch?: typeof fetch;
 }
 
 export const createAuthProvider = <T>({
-                                          accessTokenExpireKey,
-                                          accessTokenKey,
-                                          localStorageKey = 'REACT_TOKEN_AUTH_KEY',
-                                          onUpdateToken,
-                                          storage = createDefaultStore({[localStorageKey]: localStorage.getItem(localStorageKey)}),
-                                          customFetch
-                                      }: IAuthProviderConfig<T>) => {
+    accessTokenExpireKey,
+    accessTokenKey,
+    localStorageKey = 'REACT_TOKEN_AUTH_KEY',
+    onUpdateToken,
+    onHydratation,
+    storage = createDefaultStore({ [localStorageKey]: localStorage.getItem(localStorageKey) }),
+    customFetch,
+}: IAuthProviderConfig<T>) => {
     const tp = createTokenProvider({
         accessTokenExpireKey,
         accessTokenKey,
         localStorageKey,
         onUpdateToken,
-        storage
+        onHydratation,
+        storage,
     });
 
     const login = (newTokens: T) => {
@@ -58,9 +61,12 @@ export const createAuthProvider = <T>({
     const useAuth = () => {
         const [isLogged, setIsLogged] = useState(tp.isLoggedIn());
 
-        const listener = useCallback((newIsLogged: boolean) => {
-            setIsLogged(newIsLogged);
-        }, [setIsLogged]);
+        const listener = useCallback(
+            (newIsLogged: boolean) => {
+                setIsLogged(newIsLogged);
+            },
+            [setIsLogged],
+        );
 
         useEffect(() => {
             tp.subscribe(listener);
@@ -80,20 +86,22 @@ interface ITokenProviderConfig<T> {
     accessTokenKey?: string;
     localStorageKey: string;
     onUpdateToken?: (token: T) => Promise<T | null>;
+    onHydratation?: (token: T | null) => void;
     storage: {
-        getItem: (key: string) => any,
-        setItem: (key: string, value: any) => void,
-        removeItem: (key: string) => void
-    }
+        getItem: (key: string) => any;
+        setItem: (key: string, value: any) => void;
+        removeItem: (key: string) => void;
+    };
 }
 
 const createTokenProvider = <T>({
-                                    localStorageKey,
-                                    accessTokenKey,
-                                    accessTokenExpireKey,
-                                    onUpdateToken,
-                                    storage
-                                }: ITokenProviderConfig<T>) => {
+    localStorageKey,
+    accessTokenKey,
+    accessTokenExpireKey,
+    onUpdateToken,
+    onHydratation,
+    storage,
+}: ITokenProviderConfig<T>) => {
     let listeners: Array<(newLogged: boolean) => void> = [];
 
     const getTokenInternal = (): T | null => {
@@ -190,7 +198,9 @@ const createTokenProvider = <T>({
     };
 
     const isLoggedIn = () => {
-        return !!getTokenInternal();
+        const token = getTokenInternal();
+        if (onHydratation) onHydratation(token);
+        return !!token;
     };
 
     const setToken = (token: T | null) => {
