@@ -176,12 +176,7 @@ const createTokenProvider = <T>({
         const token = getTokenInternal();
         if (token && isExpired(getExpire(token))) {
             const newToken = onUpdateToken ? await onUpdateToken(token) : null;
-
-            if (newToken) {
-                setToken(newToken);
-            } else {
-                storage.removeItem(localStorageKey);
-            }
+            setToken(newToken);
         }
     };
 
