@@ -28,8 +28,8 @@ export const createAuthProvider = <T>({
         accessTokenExpireKey,
         accessTokenKey,
         localStorageKey,
-        onUpdateToken,
         onHydratation,
+        onUpdateToken,
         storage,
     });
 
@@ -194,7 +194,9 @@ const createTokenProvider = <T>({
 
     const isLoggedIn = () => {
         const token = getTokenInternal();
-        if (onHydratation) onHydratation(token);
+        if (onHydratation) {
+            onHydratation(token);
+        }
         return !!token;
     };
 
