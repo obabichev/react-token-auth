@@ -1,7 +1,11 @@
-import { IAsyncAuthStorage, IAuthStorage } from '../types';
+import { Maybe } from '../types';
 
-export const createDefaultStore = (initData = {}): IAuthStorage => {
+export type StoreData = { [key in string]: Maybe<string> };
+
+export const createTestStore = (initData: StoreData = {}) => {
     const data: any = initData;
+
+    const getData = () => data;
 
     const getItem = (key: string) => {
         return data[key];
@@ -9,19 +13,19 @@ export const createDefaultStore = (initData = {}): IAuthStorage => {
 
     const setItem = (key: string, value: any) => {
         data[key] = value;
-        localStorage.setItem(key, value);
     };
 
     const removeItem = (key: string) => {
         delete data[key];
-        localStorage.removeItem(key);
     };
 
-    return { getItem, setItem, removeItem };
+    return { getItem, setItem, removeItem, getData };
 };
 
-export const createDefaultAsyncStore = (initData = {}): IAsyncAuthStorage => {
+export const createAsyncTestStorage = (initData = {}) => {
     const data: any = initData;
+
+    const getData = () => data;
 
     const getItem = async (key: string) => {
         return data[key];
@@ -29,13 +33,11 @@ export const createDefaultAsyncStore = (initData = {}): IAsyncAuthStorage => {
 
     const setItem = async (key: string, value: any) => {
         data[key] = value;
-        localStorage.setItem(key, value);
     };
 
     const removeItem = async (key: string) => {
         delete data[key];
-        localStorage.removeItem(key);
     };
 
-    return { getItem, setItem, removeItem };
+    return { getItem, setItem, removeItem, getData };
 };
