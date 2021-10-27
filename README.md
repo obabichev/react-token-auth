@@ -5,7 +5,7 @@ But still, you may have a case when you have to use JWT tokens and store them in
 here this library might be useful.
 React Native is also a good reason for using such a library.
 
-# React Token Auth
+# React Token Auth (v2)
 
 `npm install react-token-auth`
 
