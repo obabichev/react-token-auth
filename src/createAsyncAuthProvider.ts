@@ -10,7 +10,7 @@ import { extractAccessToken } from './utils/extractAccessToken';
 
 export interface IAsyncAuthProviderConfig<Session> {
     getAccessToken?: (session: Session) => TokenString;
-    localStorageKey?: string;
+    storageKey?: string;
     onUpdateToken?: (session: Session) => Promise<Maybe<Session>>;
     onHydratation?: (session: Maybe<Session>) => void;
     storage?: IAsyncAuthStorage;
@@ -28,17 +28,17 @@ export interface IAsyncAuthProvider<Session> {
 }
 
 export const createAsyncAuthProvider = <Session>({
-    localStorageKey = 'REACT_TOKEN_AUTH_KEY',
+    storageKey = 'REACT_TOKEN_AUTH_KEY',
     onUpdateToken,
     onHydratation,
-    storage = createDefaultAsyncStore({ [localStorageKey]: localStorage.getItem(localStorageKey) }),
+    storage = createDefaultAsyncStore({ [storageKey]: localStorage.getItem(storageKey) }),
     fetchFunction = fetch,
     getAccessToken,
 }: IAsyncAuthProviderConfig<Session>): IAsyncAuthProvider<Session> => {
     const listenersContainer = createListenersContainer();
 
     const tokenProvider = createAsyncTokenProvider<Session>({
-        localStorageKey,
+        storageKey,
         storage,
     });
 

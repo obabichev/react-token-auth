@@ -23,10 +23,9 @@ is valid.
 
 ## Features
 
--   support for sync storages (web's local storage) and async storages (React Native)
--   preventing concurrent upate token requests (via shared promise)
--   updating tokens on expiration
--   React hook to synchronize authentication state with React components
+- sync (localStorage) and async (React Native) storages
+- updating tokens on expiration
+- preventing concurrent token updates
 
 ## Examples
 
@@ -55,6 +54,7 @@ type Session = { accessToken: string; refreshToken: string };
 
 export const { useAuth, authFetch, login, logout } = createAuthProvider<Session>({
     getAccessToken: session => session.accessToken,
+    storage: localStorage,
     onUpdateToken: token =>
         fetch('/update-token', {
             method: 'POST',
@@ -151,7 +151,7 @@ will be restored after refreshing the page.
 #### `IAuthProviderConfig<Session>`
 
 -   `getAccessToken?: (session: Session) => TokenString` - function which allows to extract access token from the whole session object
--   `localStorageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
+-   `storageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 -   `onUpdateToken?: (session: Session) => Promise<Maybe<Session>>` - function to update access token when it is expired
 -   `onHydratation?: (session: Maybe<Session>) => void` - function to process your tokens when `useAuth` is called.
 -   `storage?: IAuthStorage` - object that provides the api of the `localStorage` (`getItem`, `setItem`, `removeItem`) to store the data. By default, the in-memory storage is used.
@@ -171,7 +171,7 @@ will be restored after refreshing the page.
 #### `IAsyncAuthProviderConfig<Session>`
 
 -   `getAccessToken?: (session: Session) => TokenString` - function which allows to extract access token from the whole session object
--   `localStorageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
+-   `storageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 -   `onUpdateToken?: (session: Session) => Promise<Maybe<Session>>` - function to update access token when it is expired
 -   `onHydratation?: (session: Maybe<Session>) => void` - function to process your tokens when `useAuth` is called.
 -   `storage?: IAsyncAuthStorage` - object that provides the async storage api

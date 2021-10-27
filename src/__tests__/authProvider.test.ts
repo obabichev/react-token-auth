@@ -25,10 +25,10 @@ describe('authProvider with TokenSession', () => {
     });
 
     it('session should be taken from storage', () => {
-        const localStorageKey = 'test-key';
+        const storageKey = 'test-key';
         const session: TokensSession = { accessToken: 'test-access-token', refreshToken: 'test-refresh-token' };
-        const storage = createTestStore({ [localStorageKey]: JSON.stringify(session) });
-        const provider = createAuthProvider<TokensSession>({ storage, fetchFunction, localStorageKey });
+        const storage = createTestStore({ [storageKey]: JSON.stringify(session) });
+        const provider = createAuthProvider<TokensSession>({ storage, fetchFunction, storageKey });
 
         const actualSession = provider.getSessionState();
 
@@ -36,13 +36,13 @@ describe('authProvider with TokenSession', () => {
     });
 
     it('authFetch uses access token from session', async () => {
-        const localStorageKey = 'test-key';
+        const storageKey = 'test-key';
         const session: TokensSession = { accessToken: 'test-access-token', refreshToken: 'test-refresh-token' };
-        const storage = createTestStore({ [localStorageKey]: JSON.stringify(session) });
+        const storage = createTestStore({ [storageKey]: JSON.stringify(session) });
         const provider = createAuthProvider<TokensSession>({
             storage,
             fetchFunction,
-            localStorageKey,
+            storageKey,
             getAccessToken: (s) => s.accessToken,
         });
 
@@ -61,10 +61,10 @@ describe('authProvider with TokenSession', () => {
     });
 
     it('authFetch updates token if it is expired', async () => {
-        const localStorageKey = 'test-key';
+        const storageKey = 'test-key';
         const accessToken = getExpiredJWTToken();
         const session: TokensSession = { accessToken, refreshToken: 'test-refresh-token' };
-        const storage = createTestStore({ [localStorageKey]: JSON.stringify(session) });
+        const storage = createTestStore({ [storageKey]: JSON.stringify(session) });
         const onUpdateToken = jest.fn(
             (): Promise<TokensSession> =>
                 Promise.resolve({ accessToken: 'updated-access-token', refreshToken: 'updated-refresh-token' }),
@@ -72,7 +72,7 @@ describe('authProvider with TokenSession', () => {
         const provider = createAuthProvider<TokensSession>({
             storage,
             fetchFunction,
-            localStorageKey,
+            storageKey,
             getAccessToken: (s) => s.accessToken,
             onUpdateToken,
         });

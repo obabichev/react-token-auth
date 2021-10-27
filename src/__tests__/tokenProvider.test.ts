@@ -8,7 +8,7 @@ const TEST_STORAGE_KEY = 'TEST_STORAGE_KEY';
 describe('CreateTokenProvider with sync storage', () => {
     it('check setting-getting value', async () => {
         const storage = createTestStore();
-        const tp = createTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+        const tp = createTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
 
         const token = 'new-value';
         tp.setToken({ token });
@@ -18,14 +18,14 @@ describe('CreateTokenProvider with sync storage', () => {
 
     it('tokenProvider returns existing value if were no setters', async () => {
         const storage = createTestStore({ [TEST_STORAGE_KEY]: '{"test": "value"}' });
-        const tp = createTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+        const tp = createTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
 
         expect(tp.getToken()).toEqual({ test: 'value' });
     });
 
     it('check async setting-getting value', async () => {
         const storage = createAsyncTestStorage();
-        const tp = createAsyncTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+        const tp = createAsyncTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
 
         const token = 'new-value';
         await tp.setToken({ token });
@@ -35,14 +35,14 @@ describe('CreateTokenProvider with sync storage', () => {
 
     it('tokenProvider returns existing value if were no setters', async () => {
         const storage = createAsyncTestStorage({ [TEST_STORAGE_KEY]: '{"test": "value"}' });
-        const tp = createAsyncTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+        const tp = createAsyncTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
 
         expect(await tp.getToken()).toEqual({ test: 'value' });
     });
 
     // it('listener gets logged status after setToken(smth not null)', async () => {
     //     const storage = createTestStore();
-    //     const tp = createTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+    //     const tp = createTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
     //
     //     const listener = jest.fn();
     //
@@ -54,7 +54,7 @@ describe('CreateTokenProvider with sync storage', () => {
     //
     // it('listener gets unlogged status after setToken(null)', async () => {
     //     const storage = createTestStore();
-    //     const tp = createTokenProvider<TestToken>({ localStorageKey: TEST_STORAGE_KEY, storage });
+    //     const tp = createTokenProvider<TestToken>({ storageKey: TEST_STORAGE_KEY, storage });
     //
     //     const listener = jest.fn();
     //
@@ -69,7 +69,7 @@ describe('CreateTokenProvider with sync storage', () => {
     //     const onUpdate = jest.fn(async () => ({ token: 'test-updated-token' }));
     //     const storage = createTestStore({ [TEST_STORAGE_KEY]: JSON.stringify(token) });
     //     const tp = createTokenProvider<TestToken>({
-    //         localStorageKey: TEST_STORAGE_KEY,
+    //         storageKey: TEST_STORAGE_KEY,
     //         storage,
     //         onUpdateToken: onUpdate,
     //         accessTokenKey: 'token',
@@ -86,7 +86,7 @@ describe('CreateTokenProvider with sync storage', () => {
     //     const onUpdate = jest.fn();
     //     const storage = createTestStore({ [TEST_STORAGE_KEY]: JSON.stringify(token) });
     //     const tp = createTokenProvider<TestToken>({
-    //         localStorageKey: TEST_STORAGE_KEY,
+    //         storageKey: TEST_STORAGE_KEY,
     //         storage,
     //         onUpdateToken: onUpdate,
     //         accessTokenKey: 'token',
