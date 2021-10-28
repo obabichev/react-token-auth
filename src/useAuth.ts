@@ -27,7 +27,6 @@ export const createUseAuth = <Session>({
         }, []);
 
         const listener = useCallback(() => {
-            // setIsLogged(newIsLogged);
             updateIsLoggedIn();
         }, []);
 

@@ -1,5 +1,5 @@
 import { isTokenExpired } from '../isTokenExpired';
-import { getExpiredJWTToken, getNonExpiredJWTToken } from '../test-utils/jwt';
+import { createJWTTokenWithExp, getExpiredJWTToken, getNonExpiredJWTToken } from '../test-utils/jwt';
 
 describe('isTokenExpired', () => {
     it('expired token', () => {
@@ -12,5 +12,17 @@ describe('isTokenExpired', () => {
         const token = getNonExpiredJWTToken();
 
         expect(isTokenExpired(token)).toBeFalsy();
+    });
+
+    it('token expires in 1 second', () => {
+        const token = createJWTTokenWithExp(Math.floor(Date.now() / 1000) + 1);
+
+        expect(isTokenExpired(token, 5000)).toBeTruthy();
+    });
+
+    it('token expired 1 second ago', () => {
+        const token = createJWTTokenWithExp(Math.floor(Date.now() / 1000) - 1);
+
+        expect(isTokenExpired(token, 5000)).toBeTruthy();
     });
 });

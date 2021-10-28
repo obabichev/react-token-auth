@@ -1,11 +1,7 @@
 import { Maybe, TokenString } from './types';
 
-// export const updateTokenOnExpiration = async (
-//     token: TokenString,
-//     onUpdate: (token: TokenString) => Promise<Maybe<TokenString>>,
-// ) => (isTimestampExpired(jwtExp(token)) ? onUpdate(token) : token);
-
-export const isTokenExpired = (token: TokenString) => isTimestampExpired(jwtExp(token));
+export const isTokenExpired = (token: TokenString, thresholdMillisec?: number) =>
+    isTimestampExpired(jwtExp(token), thresholdMillisec);
 
 const jwtExp = (token: string): number | null => {
     const split = token.split('.');
@@ -27,10 +23,10 @@ const jwtExp = (token: string): number | null => {
     }
 };
 
-const isTimestampExpired = (exp: Maybe<number>) => {
+const isTimestampExpired = (exp: Maybe<number>, thresholdMillisec?: number) => {
     if (!exp) {
         return false;
     }
 
-    return Date.now() > exp;
+    return Date.now() > exp - (thresholdMillisec ?? 0);
 };

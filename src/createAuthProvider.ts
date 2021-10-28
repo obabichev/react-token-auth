@@ -15,6 +15,7 @@ export interface IAuthProviderConfig<Session> {
     onHydratation?: (session: Maybe<Session>) => void;
     storage?: IAuthStorage;
     fetchFunction?: typeof fetch;
+    expirationThresholdMillisec?: number;
 }
 
 export interface IAuthProvider<Session> {
@@ -33,6 +34,7 @@ export const createAuthProvider = <Session>({
     storage = createDefaultStore({ [storageKey]: localStorage.getItem(storageKey) }),
     fetchFunction = fetch,
     getAccessToken,
+    expirationThresholdMillisec = 5000,
 }: IAuthProviderConfig<Session>): IAuthProvider<Session> => {
     const listenersContainer = createListenersContainer();
     const tokenProvider = createTokenProvider<Session>({
@@ -58,7 +60,7 @@ export const createAuthProvider = <Session>({
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
 
-        if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken)) {
+        if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
             const updatedSession = await tokenUpdater.updateToken(_session);
             updateSession(updatedSession);
         }
