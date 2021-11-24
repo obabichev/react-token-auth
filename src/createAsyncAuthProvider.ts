@@ -19,7 +19,7 @@ export interface IAsyncAuthProviderConfig<Session> {
 }
 
 export interface IAsyncAuthProvider<Session> {
-    useAuth: () => [boolean];
+    useAuth: () => [boolean, Maybe<Session>];
     authFetch: typeof fetch;
     login: (session: Session) => Promise<void>;
     logout: () => Promise<void>;

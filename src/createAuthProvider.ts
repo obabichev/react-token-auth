@@ -19,7 +19,7 @@ export interface IAuthProviderConfig<Session> {
 }
 
 export interface IAuthProvider<Session> {
-    useAuth: () => [boolean];
+    useAuth: () => [boolean, Maybe<Session>];
     authFetch: typeof fetch;
     login: (session: Session) => void;
     logout: () => void;
