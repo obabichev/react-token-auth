@@ -78,6 +78,14 @@ export const createAsyncAuthProvider = <Session>({
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
         log('getSession', 'accessToken', accessToken);
+        log('getSession', 'tokenUpdater', tokenUpdater);
+        if (accessToken) {
+            log(
+                'getSession',
+                'isTokenExpired(accessToken, expirationThresholdMillisec)',
+                isTokenExpired(accessToken, expirationThresholdMillisec),
+            );
+        }
 
         if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
             const updatedSession = await tokenUpdater.updateToken(_session);
