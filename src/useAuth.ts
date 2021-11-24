@@ -12,14 +12,14 @@ export const createUseAuth = <Session>({
     onHydratation?: (session: Maybe<Session>) => void;
 }) => {
     return () => {
-        const [isLogged, setIsLogged] = useState(false);
+        const [session, setSession] = useState<Maybe<Session>>(null);
 
         const updateIsLoggedIn = () => {
-            const session = getSessionState();
+            const actualSession = getSessionState();
             if (onHydratation) {
-                onHydratation(session);
+                onHydratation(actualSession);
             }
-            setIsLogged(isLoggedIn(session));
+            setSession(actualSession);
         };
 
         useEffect(() => {
@@ -37,7 +37,7 @@ export const createUseAuth = <Session>({
             };
         }, [listener]);
 
-        return [isLogged] as [typeof isLogged];
+        return [isLoggedIn(session), session] as [boolean, Maybe<Session>];
     };
 };
 

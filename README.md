@@ -100,7 +100,7 @@ auth state. For example:
 
 ```typescript jsx
 const Router = () => {
-    const [logged] = useAuth();
+    const [logged, session] = useAuth();
 
     return (
         <BrowserRouter>
@@ -160,7 +160,7 @@ will be restored after refreshing the page.
 
 #### `IAuthProvider<Session>`
 
--   `useAuth: () => [boolean]` - hook to get information is the user logged in or not
+-   `useAuth: () => [boolean, Maybe<Session>]` - hook to get information is the user logged in or not
 -   `authFetch: typeof fetch` - wrapper around fetch to pass access tokens in the network requests
 -   `login: (session: Session) => void` - function to save token (for example, after login or register)
 -   `logout: () => void` - function to remove token from auth provider (and from local storage)
@@ -181,7 +181,7 @@ will be restored after refreshing the page.
 
 #### `IAsyncAuthProvider<Session>`
 
--   `useAuth: () => [boolean]` - hook to get information is the user logged in or not
+-   `useAuth: () => [boolean, Maybe<Session>]` - hook to get information is the user logged in or not
 -   `authFetch: typeof fetch` - wrapper around fetch to pass access tokens in the network requests
 -   `login: (session: Session) => Promise<void>` - function to save token (for example, after login or register)
 -   `logout: () => Promise<void>` - function to remove token from auth provider (and from local storage)
