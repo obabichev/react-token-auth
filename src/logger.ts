@@ -1,4 +1,8 @@
-export const createLogger = (debug?: boolean) => {
+export interface SimpleLogger {
+    log: (name: string, message: string, ...objs: any[]) => void;
+}
+
+export const createLogger = (debug?: boolean): SimpleLogger => {
     const log = (name: string, message: string, ...objs: any[]) => {
         if (debug) {
             // tslint:disable-next-line:no-console

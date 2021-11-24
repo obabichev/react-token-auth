@@ -40,7 +40,7 @@ export const createAsyncAuthProvider = <Session>({
     expirationThresholdMillisec = 5000,
     debug = false,
 }: IAsyncAuthProviderConfig<Session>): IAsyncAuthProvider<Session> => {
-    const { log } = createLogger(debug);
+    const logger = createLogger(debug);
     const listenersContainer = createListenersContainer();
 
     const tokenProvider = createAsyncTokenProvider<Session>({
@@ -52,7 +52,7 @@ export const createAsyncAuthProvider = <Session>({
 
     let _session: Maybe<Session> = null;
     const updateSession = async (session: Maybe<Session>) => {
-        log('updateSession', 'session', session);
+        logger.log('updateSession', 'session', session);
         await tokenProvider.setToken(session);
         _session = session;
         listenersContainer.notify();
@@ -77,19 +77,19 @@ export const createAsyncAuthProvider = <Session>({
 
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
-        log('getSession', 'accessToken', accessToken);
-        log('getSession', 'tokenUpdater', tokenUpdater);
+        logger.log('getSession', 'accessToken', accessToken);
+        logger.log('getSession', 'tokenUpdater', tokenUpdater);
         if (accessToken) {
-            log(
+            logger.log(
                 'getSession',
                 'isTokenExpired(accessToken, expirationThresholdMillisec)',
-                isTokenExpired(accessToken, expirationThresholdMillisec),
+                isTokenExpired(accessToken, expirationThresholdMillisec, logger),
             );
         }
 
         if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
             const updatedSession = await tokenUpdater.updateToken(_session);
-            log('getSession', 'updatedSession', accessToken);
+            logger.log('getSession', 'updatedSession', accessToken);
             await updateSession(updatedSession);
         }
 
