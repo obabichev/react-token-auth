@@ -25,4 +25,10 @@ describe('isTokenExpired', () => {
 
         expect(isTokenExpired(token, 5000)).toBeTruthy();
     });
+
+    it('hardcoded token is expired', () => {
+        const token =
+            'header.eyJlbWFpbCI6IlRlc3RAZ21haWwuY29tMiIsInN1YiI6IjEzIiwiaWF0IjoxNjM3NzQ3OTg3LCJleHAiOjE2Mzc3NDgwNDd9.sign';
+        expect(isTokenExpired(token)).toBeTruthy();
+    });
 });

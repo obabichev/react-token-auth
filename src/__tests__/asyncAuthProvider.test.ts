@@ -94,4 +94,32 @@ describe('asyncAuthProvider', () => {
             ],
         ]);
     });
+
+    it('getSession updates token if it is expired', async () => {
+        const accessToken =
+            'header.eyJlbWFpbCI6IlRlc3RAZ21haWwuY29tMiIsInN1YiI6IjEzIiwiaWF0IjoxNjM3NzQ3OTg3LCJleHAiOjE2Mzc3NDgwNDd9.sign';
+        const storageKey = 'test-key';
+        const session: TokensSession = { accessToken, refreshToken: 'test-refresh-token' };
+        const storage = createAsyncTestStorage({ [storageKey]: JSON.stringify(session) });
+        const onUpdateToken = jest.fn(
+            (): Promise<TokensSession> =>
+                Promise.resolve({ accessToken: 'updated-access-token', refreshToken: 'updated-refresh-token' }),
+        );
+        const provider = createAsyncAuthProvider<TokensSession>({
+            storage,
+            fetchFunction,
+            storageKey,
+            getAccessToken: (s) => s.accessToken,
+            onUpdateToken,
+            expirationThresholdMillisec: 1000,
+        });
+        await provider.waitInit();
+        await provider.getSession();
+
+        expect(onUpdateToken.mock.calls).toEqual([[session]]);
+        expect(provider.getSessionState()).toEqual({
+            accessToken: 'updated-access-token',
+            refreshToken: 'updated-refresh-token',
+        });
+    });
 });

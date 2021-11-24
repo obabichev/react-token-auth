@@ -1,6 +1,7 @@
 import { createListenersContainer } from './createListenersContainer';
 import { createAsyncTokenProvider } from './createTokenProvider';
 import { isTokenExpired } from './isTokenExpired';
+import { createLogger } from './logger';
 import { createTokenUpdater } from './tokenUpdater';
 import { Getter, IAsyncAuthStorage, Maybe, TokenString } from './types';
 import { createUseAuth } from './useAuth';
@@ -16,6 +17,7 @@ export interface IAsyncAuthProviderConfig<Session> {
     storage?: IAsyncAuthStorage;
     fetchFunction?: typeof fetch;
     expirationThresholdMillisec?: number;
+    debug?: boolean;
 }
 
 export interface IAsyncAuthProvider<Session> {
@@ -36,7 +38,9 @@ export const createAsyncAuthProvider = <Session>({
     fetchFunction = fetch,
     getAccessToken,
     expirationThresholdMillisec = 5000,
+    debug = false,
 }: IAsyncAuthProviderConfig<Session>): IAsyncAuthProvider<Session> => {
+    const { log } = createLogger(debug);
     const listenersContainer = createListenersContainer();
 
     const tokenProvider = createAsyncTokenProvider<Session>({
@@ -48,6 +52,7 @@ export const createAsyncAuthProvider = <Session>({
 
     let _session: Maybe<Session> = null;
     const updateSession = async (session: Maybe<Session>) => {
+        log('updateSession', 'session', session);
         await tokenProvider.setToken(session);
         _session = session;
         listenersContainer.notify();
@@ -72,9 +77,11 @@ export const createAsyncAuthProvider = <Session>({
 
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
+        log('getSession', 'accessToken', accessToken);
 
         if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
             const updatedSession = await tokenUpdater.updateToken(_session);
+            log('getSession', 'updatedSession', accessToken);
             await updateSession(updatedSession);
         }
 
