@@ -1,6 +1,6 @@
 import { createListenersContainer } from './createListenersContainer';
 import { createTokenProvider } from './createTokenProvider';
-import { isTokenExpired } from './isTokenExpired';
+import { isTokenExpired, jwtExp } from './isTokenExpired';
 import { createTokenUpdater } from './tokenUpdater';
 import { Getter, IAuthStorage, Maybe, TokenString } from './types';
 import { createUseAuth } from './useAuth';
@@ -10,6 +10,7 @@ import { extractAccessToken } from './utils/extractAccessToken';
 
 export interface IAuthProviderConfig<Session> {
     getAccessToken?: (session: Session) => TokenString;
+    getExpirationTime?: (session: Session) => Maybe<number>;
     storageKey?: string;
     onUpdateToken?: (session: Session) => Promise<Maybe<Session>>;
     onHydratation?: (session: Maybe<Session>) => void;
@@ -35,6 +36,7 @@ export const createAuthProvider = <Session>({
     fetchFunction = fetch,
     getAccessToken,
     expirationThresholdMillisec = 5000,
+    getExpirationTime,
 }: IAuthProviderConfig<Session>): IAuthProvider<Session> => {
     const listenersContainer = createListenersContainer();
     const tokenProvider = createTokenProvider<Session>({
@@ -60,9 +62,12 @@ export const createAuthProvider = <Session>({
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
 
-        if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
-            const updatedSession = await tokenUpdater.updateToken(_session);
-            updateSession(updatedSession);
+        if (_session && tokenUpdater && accessToken) {
+            const getExpTime = getExpirationTime || (() => jwtExp(accessToken));
+            if (isTokenExpired(getExpTime(_session), expirationThresholdMillisec)) {
+                const updatedSession = await tokenUpdater.updateToken(_session);
+                updateSession(updatedSession);
+            }
         }
 
         return getSessionState();

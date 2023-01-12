@@ -1,6 +1,6 @@
 import { createListenersContainer } from './createListenersContainer';
 import { createAsyncTokenProvider } from './createTokenProvider';
-import { isTokenExpired } from './isTokenExpired';
+import { isTokenExpired, jwtExp } from './isTokenExpired';
 import { createLogger } from './logger';
 import { createTokenUpdater } from './tokenUpdater';
 import { Getter, IAsyncAuthStorage, Maybe, TokenString } from './types';
@@ -11,6 +11,7 @@ import { extractAccessToken } from './utils/extractAccessToken';
 
 export interface IAsyncAuthProviderConfig<Session> {
     getAccessToken?: (session: Session) => TokenString;
+    getExpirationTime?: (session: Session) => Maybe<number>;
     storageKey?: string;
     onUpdateToken?: (session: Session) => Promise<Maybe<Session>>;
     onHydratation?: (session: Maybe<Session>) => void;
@@ -39,6 +40,7 @@ export const createAsyncAuthProvider = <Session>({
     getAccessToken,
     expirationThresholdMillisec = 5000,
     debug = false,
+    getExpirationTime,
 }: IAsyncAuthProviderConfig<Session>): IAsyncAuthProvider<Session> => {
     const logger = createLogger(debug);
     const listenersContainer = createListenersContainer();
@@ -52,7 +54,7 @@ export const createAsyncAuthProvider = <Session>({
 
     let _session: Maybe<Session> = null;
     const updateSession = async (session: Maybe<Session>) => {
-        logger.log('updateSession', 'session', session);
+        logger?.debug('updateSession', 'session', session);
         await tokenProvider.setToken(session);
         _session = session;
         listenersContainer.notify();
@@ -64,8 +66,7 @@ export const createAsyncAuthProvider = <Session>({
         .then(() => {
             initiationPromise = null;
         })
-        // tslint:disable-next-line:no-console
-        .catch(console.error);
+        .catch(logger?.warn);
 
     const waitInit = () => initiationPromise;
 
@@ -77,20 +78,23 @@ export const createAsyncAuthProvider = <Session>({
 
     const getSession = async () => {
         const accessToken = extractAccessToken(getSessionState(), getAccessToken);
-        logger.log('getSession', 'accessToken', accessToken);
-        logger.log('getSession', 'tokenUpdater', tokenUpdater);
-        if (accessToken) {
-            logger.log(
+        logger?.debug('getSession', 'accessToken', accessToken);
+        logger?.debug('getSession', 'tokenUpdater', tokenUpdater);
+        if (_session && accessToken) {
+            const getExpTime = getExpirationTime || (() => jwtExp(accessToken));
+            logger?.debug(
                 'getSession',
-                'isTokenExpired(accessToken, expirationThresholdMillisec)',
-                isTokenExpired(accessToken, expirationThresholdMillisec, logger),
+                'isTokenExpired(getExpTime(_session), expirationThresholdMillisec)',
+                isTokenExpired(getExpTime(_session), expirationThresholdMillisec, logger),
             );
-        }
 
-        if (_session && tokenUpdater && accessToken && isTokenExpired(accessToken, expirationThresholdMillisec)) {
-            const updatedSession = await tokenUpdater.updateToken(_session);
-            logger.log('getSession', 'updatedSession', accessToken);
-            await updateSession(updatedSession);
+            if (tokenUpdater) {
+                if (isTokenExpired(getExpTime(_session), expirationThresholdMillisec)) {
+                    const updatedSession = await tokenUpdater.updateToken(_session);
+                    logger?.debug('getSession', 'updatedSession', accessToken);
+                    await updateSession(updatedSession);
+                }
+            }
         }
 
         return getSessionState();

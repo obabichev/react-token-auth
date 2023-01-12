@@ -1,7 +1,7 @@
 # Disclaimer
 
 In general, I would suggest using cookie sessions for web applications.
-But still, you may have a case when you have to use JWT tokens and store them in the local storage,
+But still, you may have a case when you have to use JWT/Non-JWT tokens and store them in the local storage,
 here this library might be useful.
 React Native is also a good reason for using such a library.
 
@@ -32,7 +32,7 @@ is valid.
 This library has typings for TypeScript code, but nothing prevents you from just
 remove types from the examples and use as a JavaScript code.
 
-### Access and Refresh tokens
+### Access and Refresh JWT tokens
 
 Let's assume you have a backend that uses `accessToken` and `refreshToken` to auth
 users and provides services `/login`, `/register`, and `/update-token`. All services
@@ -50,7 +50,10 @@ The first step you need to do is to create an instance of an `authProvider`.
 ```typescript
 import { createAuthProvider } from 'react-token-auth';
 
-type Session = { accessToken: string; refreshToken: string };
+type Session = { 
+    accessToken: string
+    refreshToken: string
+};
 
 export const { useAuth, authFetch, login, logout } = createAuthProvider<Session>({
     getAccessToken: session => session.accessToken,
@@ -144,6 +147,35 @@ export const getUser = (userId: string) => (dispatch: Dispatch) => {
 Also if the token already saved in the `localStorage`, it
 will be restored after refreshing the page.
 
+
+### Non-JWT tokens
+By default, the access_token expiration time is determined by the JWT token, but you can provide the expiration time yourself.
+
+For example, the session expiration time can be stored in the session object.
+
+To do this, you just need to override `getExpirationTime` in the configuration:
+```typescript
+import { createAuthProvider } from 'react-token-auth';
+
+type Session = { 
+    accessToken: string
+    refreshToken: string
+    expirationTime: number
+};
+
+export const { useAuth, authFetch, login, logout } = createAuthProvider<Session>({
+    getAccessToken: session => session.accessToken,
+    getExpirationTime: session => session.expirationTime,
+    storage: localStorage,
+    onUpdateToken: token =>
+        fetch('/update-token', {
+            method: 'POST',
+            body: token.refreshToken,
+        }).then(r => r.json()),
+});
+```
+
+
 ## API
 
 ### `createAuthProvider<Session>(config: IAuthProviderConfig<Session>)` -> `IAuthProvider<Session>`
@@ -151,6 +183,7 @@ will be restored after refreshing the page.
 #### `IAuthProviderConfig<Session>`
 
 - `getAccessToken?: (session: Session) => TokenString` - function which allows to extract access token from the whole session object
+- `getExpirationTime?: (session: Session) => Maybe<number>` - function which allows to extract expiration time from the whole session object. Default time from JWT token. 
 - `storageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 - `onUpdateToken?: (session: Session) => Promise<Maybe<Session>>` - function to update access token when it is expired
 - `onHydratation?: (session: Maybe<Session>) => void` - function to process your tokens when `useAuth` is called.
@@ -172,6 +205,7 @@ will be restored after refreshing the page.
 #### `IAsyncAuthProviderConfig<Session>`
 
 - `getAccessToken?: (session: Session) => TokenString` - function which allows to extract access token from the whole session object
+- `getExpirationTime?: (session: Session) => Maybe<number>` - function which allows to extract expiration time from the whole session object. Default time from JWT token.
 - `storageKey?: string = 'REACT_TOKEN_AUTH_KEY'` - key that will be used to store value in local storage
 - `onUpdateToken?: (session: Session) => Promise<Maybe<Session>>` - function to update access token when it is expired
 - `onHydratation?: (session: Maybe<Session>) => void` - function to process your tokens when `useAuth` is called.
