@@ -1,6 +1,6 @@
 import { Maybe } from './types';
-import { Base64 } from './utils/base64';
 import {Logger} from "tslog";
+import bufferFrom from 'buffer-from';
 
 export const isTokenExpired = (exp: Maybe<number>, thresholdMillisec?: number, logger?: Logger<any>) => {
     logger?.debug('isTokenExpired', 'exp', exp);
@@ -22,7 +22,7 @@ export const jwtExp = (token: string, logger?: Logger<any>): number | null => {
     }
 
     try {
-        const middlePart = Base64.decode(token.split('.')[1]);
+        const middlePart = bufferFrom(token.split('.')[1], 'base64').toString();
         logger?.debug('jwtExp', 'middlePart', middlePart);
         const jwt = JSON.parse(middlePart);
         logger?.debug('jwtExp', 'jwt', jwt);

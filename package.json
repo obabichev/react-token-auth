@@ -42,6 +42,8 @@
     "lib/**/*"
   ],
   "dependencies": {
+    "@types/buffer-from": "^1.1.0",
+    "buffer-from": "^1.1.2",
     "tslog": "^4.7.1"
   }
 }

@@ -6,6 +6,7 @@
         "outDir": "./lib",
         "strict": true,
         "allowJs": true,
+        "esModuleInterop": true,
         "lib": ["dom", "es6"]
     },
     "include": ["src"],
